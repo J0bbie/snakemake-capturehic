@@ -1,0 +1,48 @@
+from snakemake.utils import min_version
+import fnmatch
+
+# Initialization ----
+
+# Set min. snakemake version for compatability.
+min_version("7.31.1")
+
+
+# Specify configuration file.
+configfile: "config.yaml"
+
+# Read sample metadata. ----
+samplesheet = pd.read_csv(config["path_samples"], sep="\t", dtype=str, comment="#")
+
+# Set working directory to output directory.
+workdir: config["dir_output"]
+
+
+wildcard_constraints:
+    species="|".join([re.escape(x) for x in samplesheet["species"]]),
+    tissue="|".join([re.escape(x) for x in samplesheet["tissue"]]),
+    replicate="|".join([re.escape(x) for x in samplesheet["replicate"]]),
+    sample="|".join([re.escape(x) for x in samplesheet["sample"]]),
+
+
+# Workflow output. ----
+
+
+rule all:
+    input:
+        lambda w: [
+            "variants/{sample}_{strain1}_{strain2}_VEP_haplocounted.vcf.gz".format(
+                type="WGS", sample=sample, strain1=strain1, strain2=strain2
+            )
+            for sample, strain1, strain2 in zip(
+                samplesheet_tumor["sample"],
+                samplesheet_tumor["strain1"],
+                samplesheet_tumor["strain2"],
+            )
+        ],
+
+
+# Load rules ----
+
+include: "rules/step1_prepare_genomes.smk"
+include: "rules/step2_alignment.smk"
+

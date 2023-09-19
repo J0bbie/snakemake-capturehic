@@ -1,0 +1,9 @@
+name: capturehic
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bioconda::hicup==0.9.2
+  - bioconda::seqkit>=2.5.1
+  - bioconda::samtools>=1.5.1
+  - bioconda::bowtie2>=2.5.1
