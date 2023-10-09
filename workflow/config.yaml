@@ -1,3 +1,0 @@
-dir_input: "~/odomLab/capturehic/data/rawreads/"            # Folder containing the capture Hi-C data (.fq files).
-dir_output: "~/odomLab/capturehic/data/"                    # Output folder to store all results.
-path_samples: "~/odomLab/capturehic/metadata/samples.txt"   # Path to samples.

@@ -5,7 +5,8 @@ rule alignment_hicup:
                 "{fastq}/{sample}_r_1.fq.gz".format(fastq=config['dir_input'], sample = w.sample),
                 "{fastq}/{sample}_r_2.fq.gz".format(fastq=config['dir_input'], sample = w.sample),
             ],
-        bowtie2_index = directory("genomes/{species}/bowtie2_index/"),
+        genome_index = "genomes/{species}/bowtie2_index/",
+        genome_digest = "genomes/{species}/genome_digest.txt",
     output:
         out_dir = directory("alignment/{species}/{sample}/"),
         bam = "alignment/{species}/{sample}.bam",
@@ -20,9 +21,9 @@ rule alignment_hicup:
     shell:
         """
         hicup  \
-        --digest {params.digest} \
+        --digest {input.genome_digest} \
         --format Sanger \
-        --index {input.bowtie2_index} \
+        --index {input.genome_index} \
         --longest 700 \ 
         --zip 1 \
         --keep 1 \

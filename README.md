@@ -7,3 +7,7 @@
 ## Documentation
 
 See the [documentation](https://odomlab2.github.io/snakemake-capturehic/) for more information on how to install, configure and run the workflow.
+
+## Quickstart
+
+`snakemake -p --profile lsf_dkfz --use-conda --rerun-incomplete --notemp -n`
