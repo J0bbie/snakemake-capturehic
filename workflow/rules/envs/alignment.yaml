@@ -1,4 +1,4 @@
-name: capturehic
+name: capturehic_alignment
 channels:
   - conda-forge
   - bioconda

@@ -1,8 +1,12 @@
 # Folder containing the capture Hi-C data (.fq files).
 dir_input: "/omics/groups/OE0538/internal/projects/capturehic/data/rawreads/"
 
+# Folder containing additional metadata and supplementary files.
+dir_supplementary: "/omics/groups/OE0538/internal/projects/capturehic/data/metadata/"
+
 # Output folder to store all results.
 dir_output: "/omics/groups/OE0538/internal/projects/capturehic/data/workflow/"
 
 # Path to sample-sheet.
 path_samples: "config/samples.txt"
+

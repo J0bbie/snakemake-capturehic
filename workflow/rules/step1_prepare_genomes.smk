@@ -1,10 +1,13 @@
-# Rules relating to downloading the reference genomes and preparing them for subsequent analysis.
+###############################################################################
+# Rules relating downloading and processing the reference genomes.
+###############################################################################
+
 rule download_species:
     output:
         genome="genomes/{species}/genome.fa.gz",
     threads: 1
     resources:
-        mem_mb=1024*5
+        mem_mb=1024*20
     params:
         species=lambda wildcards: wildcards.species,
     conda:
@@ -37,13 +40,18 @@ rule download_species:
         fi
 
         if [ {params.species} == "callithrix_jacchus" ]; then
-            for chr in {{1..20}} X Y MT; do
-                wget -P genomes/{params.species} https://ftp.ensembl.org/pub/release-98/fasta/callithrix_jacchus/dna/Callithrix_jacchus.ASM275486v1.dna.toplevel.fa.gz;
-            done
+            wget -P genomes/{params.species} https://ftp.ensembl.org/pub/release-98/fasta/callithrix_jacchus/dna/Callithrix_jacchus.ASM275486v1.dna.toplevel.fa.gz;
+
+            # Rename and subset the chromosomes.
+            seqkit replace -p "(.+)" -r '{{kv}}|$1' -k {workflow.basedir}/rules/misc/callithrix_jacchus_scaffolds.txt genomes/{params.species}/Callithrix_jacchus.ASM275486v1.dna.toplevel.fa.gz | seqkit grep -r -p "chr" | gzip -c > genomes/{params.species}/genome_subsetted.fa.gz
+            rm genomes/{params.species}/Callithrix_jacchus.ASM275486v1.dna.toplevel.fa.gz
         fi
 
         # Combine separate chromosomes into a single genome file.
-        zcat genomes/{params.species}/*.fa.gz | seqkit sort --natural-order | gzip -c > genomes/{params.species}/genome.fa.gz
+        zcat genomes/{params.species}/*.fa.gz | seqkit sort --natural-order > genomes/{params.species}/genome.fa
+
+        # Compress the genome file.
+        gzip genomes/{params.species}/genome.fa
 
         # Remove separate chromosomes.
         find genomes/{params.species}/ -type f ! -name 'genome.fa.gz' -delete
@@ -53,7 +61,7 @@ rule generate_digest:
     input:
         genome="genomes/{species}/genome.fa.gz",
     output:
-        digest=directory("genomes/{species}/digest/"),
+        digest_file="genomes/{species}/digest_HindIII.txt",
     threads: 20
     resources:
         mem_mb=1024*30
@@ -65,8 +73,11 @@ rule generate_digest:
         hicup_digester \
         --genome {wildcards.species} \
         -re1 A^AGCTT,HindIII \
-        --outdir {output.digest} \
+        --outdir genomes/{wildcards.species}/ \
         {input.genome} 
+
+        # Rename the digest file.
+        mv genomes/{wildcards.species}/Digest_*.txt {output.digest_file}
         """
 
 
@@ -83,6 +94,6 @@ rule generate_bowtie2_index:
     message: "Generating bowtie2 index for {wildcards.species}"
     shell:
         """
-        mkdir -p genomes/{wildcards.species}/bowtie2_index
+        mkdir -p {output.idx}
         bowtie2-build --threads {threads} {input.genome} {output.idx}/{wildcards.species}
         """

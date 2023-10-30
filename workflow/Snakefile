@@ -31,7 +31,7 @@ wildcard_constraints:
 rule all:
     input:
         lambda w: [
-            "genomes/{species}/digest/".format(
+            "alignment/{species}/{sample}.bam".format(
                 sample=sample, species=species, tissue=tissue, replicate=replicate
             )
             for sample, species, tissue, replicate in zip(
@@ -47,5 +47,5 @@ rule all:
 
 include: "rules/step1_prepare_genomes.smk"
 include: "rules/step2_alignment.smk"
-include: "rules/step3_chicago.smk"
+#include: "rules/step3_chicago.smk"
 

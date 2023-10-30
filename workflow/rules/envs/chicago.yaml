@@ -1,0 +1,7 @@
+name: capturehic_chicago
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bioconda::bioconductor-chicago>=1.8.0
+  - bioconda::bedtools>=2.31.0
