@@ -11,3 +11,9 @@ See the [documentation](https://odomlab2.github.io/snakemake-capturehic/) for mo
 ## Quickstart
 
 `snakemake -p --profile lsf_dkfz --use-conda --rerun-incomplete --notemp -n`
+
+# Misc. Notes
+for f in full/*gz; do 
+    # Subset first 1000000 reads
+    zcat $f | head -n 4000000 | gzip > ${f/full/.};
+done

@@ -7,3 +7,5 @@ dependencies:
   - bioconda::seqkit>=2.5.1
   - bioconda::samtools>=1.5.1
   - bioconda::bowtie2>=2.5.1
+  - conda-forge::r-tidyverse
+  - conda-forge::r-plotly

@@ -4,7 +4,7 @@
 
 rule chicago_rmap:
 	input:
-		"genomes/{species}/genome_digest.txt",
+		"genomes/{species}/digest_HindIII.txt",
 	output:
         "chicago/design/{species}.rmap",
     log:
@@ -21,11 +21,16 @@ rule chicago_rmap:
 rule chicago_baitmap:
 	input:
 		rmap = "chicago/design/{species}.rmap",
-		probes = probesDir + "{SPECIES}_filt_finalTargets.bed"
+		probes = config["dir_supplementary"] + "{species}_filt_finalTargets.bed"
 	output:
         "chicago/design/{species}.baitmap",
 	conda:
-		"envs/chicago.yaml"
+		"envs/chicago.yaml",
+	log:
+		"logs/chicago/{species}_chicago_baitmap.log",
+	threads: 1
+	resources:
+		mem_mb=1024 * 2
 	shell:
 		"""
 		bedtools intersect -a {input.rmap}  -b {input.probes} | \

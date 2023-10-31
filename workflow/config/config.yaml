@@ -9,4 +9,3 @@ dir_output: "/omics/groups/OE0538/internal/projects/capturehic/data/workflow/"
 
 # Path to sample-sheet.
 path_samples: "config/samples.txt"
-

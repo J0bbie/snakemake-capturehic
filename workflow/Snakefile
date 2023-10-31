@@ -31,7 +31,7 @@ wildcard_constraints:
 rule all:
     input:
         lambda w: [
-            "alignment/{species}/{sample}.bam".format(
+            "alignment/{species}/{sample}/{sample}_r_1_2.hicup.bam".format(
                 sample=sample, species=species, tissue=tissue, replicate=replicate
             )
             for sample, species, tissue, replicate in zip(
