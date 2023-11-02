@@ -4,4 +4,5 @@ channels:
   - bioconda
 dependencies:
   - bioconda::bioconductor-chicago>=1.8.0
+  - bioconda::chicagotools>=1.2.0
   - bioconda::bedtools>=2.31.0
