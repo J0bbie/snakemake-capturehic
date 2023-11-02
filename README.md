@@ -1,4 +1,4 @@
-# **snakemake-lesionsegregation**
+# **snakemake-capturehic**
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![Github issues](https://img.shields.io/github/issues/odomlab2/snakemake-capturehic)](https://img.shields.io/github/issues/odomlab2/snakemake-capturehic)
 
@@ -11,9 +11,3 @@ See the [documentation](https://odomlab2.github.io/snakemake-capturehic/) for mo
 ## Quickstart
 
 `snakemake -p --profile lsf_dkfz --use-conda --rerun-incomplete --notemp -n`
-
-# Misc. Notes
-for f in full/*gz; do 
-    # Subset first 1000000 reads
-    zcat $f | head -n 4000000 | gzip > ${f/full/.};
-done
