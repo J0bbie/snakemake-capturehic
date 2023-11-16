@@ -1,6 +1,6 @@
 #!/bin/bash
 
-script="bam2chicago_V02.sh"
+script="bam2chicago_v2.sh"
 
 command -v bedtools >/dev/null 2>&1 || { echo >&2 "Error: Cannot execute bedtools. Check that it's installed and added to PATH. Aborting."; exit 1; }
 command -v awk >/dev/null 2>&1 || { echo >&2 "Error: Cannot execute awk. Aborting."; exit 1; }

@@ -22,6 +22,7 @@ rule chicago_baitmap:
         probes=config["dir_supplementary"]+"probes/{species}_filt_finalTargets.bed"
     output:
         baitmap="chicago/design/{species}.baitmap",
+        baitmap_4col="chicago/design/{species}.baitmap_4col.txt",
     conda:
         "envs/chicago.yaml",
     threads: 1
@@ -32,12 +33,16 @@ rule chicago_baitmap:
         """
         bedtools intersect -a {input.rmap}  -b {input.probes} -wa -wb | \
         bedtools groupby -g 1-4 -c 9 -o distinct > {output.baitmap}
+
+        cat {output.baitmap} | cut -f1-4 > {output.baitmap_4col}
         """
+
 
 rule chicago_designfiles:
     input:
         rmap="chicago/design/{species}.rmap",
         baitmap="chicago/design/{species}.baitmap",
+        baitmap_4col="chicago/design/{species}.baitmap_4col.txt"
     output:
         f1="chicago/design/{species}.poe",
         f2="chicago/design/{species}.npb",
@@ -62,20 +67,27 @@ rule chicago_output:
         rmap="chicago/design/{species}.rmap",
         baitmap="chicago/design/{species}.baitmap",
     output:
-        chicago_input="chicago/input/{species}/{sample}.chicinput",
-        chicago_bedpe="chicago/input/{species}/{sample}.bait2bait.bedpe"
+        chicago_input="chicago/input/{species}/{sample}.chinput",
+        chicago_bedpe="chicago/input/{species}/{sample}_bait2bait.bedpe"
     params:
-        out_name="chicago/design/{species}/{sample}"
+        out_name="chicago/input/{species}/{sample}"
     conda:
         "envs/chicago.yaml",
     message: "Generating CHiCAGO input files for ({wildcards.species}): {wildcards.sample}."
     shell:
         """
-        {workflow.basedir}/rules/misc/bam2chicago_v2.sh /
+
+        mkdir -p chicago/input/{wildcards.species}/
+
+        {workflow.basedir}/rules/misc/bam2chicago_v2.sh \
             --bamfile {input.bam} \
             --baitmap {input.baitmap} \
             --rmap {input.rmap} \
             --outname {params.out_name}
+        
+        # Move one folder back.
+        mv {params.out_name}/* chicago/input/{wildcards.species}/
+        rmdir {params.out_name}
         """
 
 # # Combine sample replicates into a single file.
