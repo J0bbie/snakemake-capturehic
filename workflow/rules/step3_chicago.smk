@@ -27,10 +27,11 @@ rule chicago_baitmap:
     threads: 1
     resources:
         mem_mb=1024 * 2
+    message: "Generating baitmap for {wildcards.species}."
     shell:
         """
-        bedtools intersect -a {input.rmap}  -b {input.probes} | \
-        bedtools groupby -g 1-4 -c 4 -o distinct > {output.baitmap}
+        bedtools intersect -a {input.rmap}  -b {input.probes} -wa -wb | \
+        bedtools groupby -g 1-4 -c 9 -o distinct > {output.baitmap}
         """
 
 rule chicago_designfiles:
@@ -43,6 +44,7 @@ rule chicago_designfiles:
         f3="chicago/design/{species}.nbpb"
     conda:
         "envs/chicago.yaml",
+    message: "Generating design files for {wildcards.species}."
     shell:
         """
         python2.7 $(which makeDesignFiles.py) \
@@ -60,17 +62,41 @@ rule chicago_output:
         rmap="chicago/design/{species}.rmap",
         baitmap="chicago/design/{species}.baitmap",
     output:
-        chicago_input="chicago/design/{species}/{sample}.chicinput",
-        chicago_bedpe="chicago/design/{species}/{sample}.bait2bait.bedpe"
+        chicago_input="chicago/input/{species}/{sample}.chicinput",
+        chicago_bedpe="chicago/input/{species}/{sample}.bait2bait.bedpe"
     params:
         out_name="chicago/design/{species}/{sample}"
     conda:
         "envs/chicago.yaml",
+    message: "Generating CHiCAGO input files for ({wildcards.species}): {wildcards.sample}."
     shell:
         """
-        bam2chicago.sh \
+        {workflow.basedir}/rules/misc/bam2chicago_v2.sh /
             --bamfile {input.bam} \
             --baitmap {input.baitmap} \
             --rmap {input.rmap} \
             --outname {params.out_name}
         """
+
+# # Combine sample replicates into a single file.
+# def make_table(sample_list, otp_Dir, species):
+#     samples_of_species = list(filter(lambda x: species in x, sample_list))
+#     flname = otp_Dir + "peakMatrix_f/" + species + "_toPeakMatrix.tab"
+
+#     for samp in samples_of_species:
+#         sp = samp.split("_")[2]
+#         tiss = samp.split("_")[3]
+#         combo = sp + "_" + tiss
+#         row = samp + "\t" + otp_Dir + combo + "/" + samp + ".rds"
+       
+#         with open(flname, "a") as otp:
+#             otp.write(row + "\n")
+#     return
+
+# rule create_matrixInput:
+# 	output:
+# 		otp_fl = "chicago/input/{species}_toPeakMatrix.tab"
+# 	params:
+# 		sample_list = samplesheet.query("species == '{species}'")["sample"].tolist(),
+# 	run:
+#         make_table(sample_list = params.sample_list, otp_Dir = "chicago/design/", species = wildcards.species)
