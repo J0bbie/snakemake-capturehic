@@ -13,6 +13,8 @@ rule alignment_hicup:
         genome_digest="genomes/{species}/digest_HindIII.txt",
     output:
         out_dir=directory("alignment/{species}/{sample}/"),
+        trunc_r1="alignment/{species}/{sample}/{sample}_r_1.trunc.fastq.gz",
+        trunc_r2="alignment/{species}/{sample}/{sample}_r_2.trunc.fastq.gz",
         bam="alignment/{species}/{sample}/{sample}_r_1_2.hicup.bam",
     log:
         "logs/alignment/{species}_{sample}_alignment_hicup.log",

@@ -43,8 +43,11 @@ rule download_species:
             wget -P genomes/{params.species} https://ftp.ensembl.org/pub/release-98/fasta/callithrix_jacchus/dna/Callithrix_jacchus.ASM275486v1.dna.toplevel.fa.gz;
 
             # Rename and subset the chromosomes.
-            seqkit replace -p "(.+)" -r '{{kv}}|$1' -k {workflow.basedir}/rules/misc/callithrix_jacchus_scaffolds.txt genomes/{params.species}/Callithrix_jacchus.ASM275486v1.dna.toplevel.fa.gz | seqkit grep -r -p "|" | gzip -c > genomes/{params.species}/genome_subsetted.fa.gz
+            cut -f1 {workflow.basedir}/rules/misc/callithrix_jacchus_scaffolds.txt > genomes/patterns.txt
+
+            seqkit grep -n -f genomes/patterns.txt genomes/{params.species}/Callithrix_jacchus.ASM275486v1.dna.toplevel.fa.gz | gzip -c > genomes/{params.species}/genome_subsetted.fa.gz
             rm genomes/{params.species}/Callithrix_jacchus.ASM275486v1.dna.toplevel.fa.gz
+            rm genomes/patterns.txt
         fi
 
         # Combine separate chromosomes into a single genome file.

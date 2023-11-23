@@ -1,0 +1,5 @@
+__default__:
+  queue: long
+
+alignment_hicup:
+  queue: verylong

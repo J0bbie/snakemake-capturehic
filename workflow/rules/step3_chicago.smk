@@ -6,7 +6,7 @@ rule chicago_rmap:
     input:
         digest_file="genomes/{species}/digest_HindIII.txt",
     output:
-        rmap="chicago/design/{species}.rmap",
+        rmap="chicago/design/{species}/{species}.rmap",
     threads: 1
     resources:
         mem_mb=1024 * 2
@@ -18,11 +18,11 @@ rule chicago_rmap:
 
 rule chicago_baitmap:
     input:
-        rmap="chicago/design/{species}.rmap",
+        rmap="chicago/design/{species}/{species}.rmap",
         probes=config["dir_supplementary"]+"probes/{species}_filt_finalTargets.bed"
     output:
-        baitmap="chicago/design/{species}.baitmap",
-        baitmap_4col="chicago/design/{species}.baitmap_4col.txt",
+        baitmap="chicago/design/{species}/{species}.baitmap",
+        baitmap_4col="chicago/design/{species}/{species}.baitmap_4col.txt",
     conda:
         "envs/chicago.yaml",
     threads: 1
@@ -40,32 +40,37 @@ rule chicago_baitmap:
 
 rule chicago_designfiles:
     input:
-        rmap="chicago/design/{species}.rmap",
-        baitmap="chicago/design/{species}.baitmap",
-        baitmap_4col="chicago/design/{species}.baitmap_4col.txt"
+        rmap="chicago/design/{species}/{species}.rmap",
+        baitmap="chicago/design/{species}/{species}.baitmap",
+        baitmap_4col="chicago/design/{species}/{species}.baitmap_4col.txt"
     output:
-        f1="chicago/design/{species}.poe",
-        f2="chicago/design/{species}.npb",
-        f3="chicago/design/{species}.nbpb"
+        f1="chicago/design/{species}/{species}.poe",
+        f2="chicago/design/{species}/{species}.npb",
+        f3="chicago/design/{species}/{species}.nbpb"
     conda:
         "envs/chicago.yaml",
+    threads: 1
+    resources:
+        mem_mb=1024 * 5,
+    params:
+        designDir="chicago/design/{species}/"
     message: "Generating design files for {wildcards.species}."
     shell:
         """
         python2.7 $(which makeDesignFiles.py) \
                     --rmapfile={input.rmap}   \
                     --baitmapfile={input.baitmap} \
-                    --outfilePrefix={wildcards.species} \
+                    --outfilePrefix=chicago/design/{wildcards.species}/{wildcards.species} \
                     --minFragLen=150 \
                     --maxFragLen=40000 \
-                    --designDir=chicago/design/
+                    --designDir={params.designDir}
         """
 
 rule chicago_output:
     input:
         bam="alignment/{species}/{sample}/{sample}_r_1_2.hicup.bam",
-        rmap="chicago/design/{species}.rmap",
-        baitmap="chicago/design/{species}.baitmap",
+        rmap="chicago/design/{species}/{species}.rmap",
+        baitmap="chicago/design/{species}/{species}.baitmap",
     output:
         chicago_input="chicago/input/{species}/{sample}.chinput",
         chicago_bedpe="chicago/input/{species}/{sample}_bait2bait.bedpe"
@@ -90,25 +95,42 @@ rule chicago_output:
         rmdir {params.out_name}
         """
 
-# # Combine sample replicates into a single file.
-# def make_table(sample_list, otp_Dir, species):
-#     samples_of_species = list(filter(lambda x: species in x, sample_list))
-#     flname = otp_Dir + "peakMatrix_f/" + species + "_toPeakMatrix.tab"
-
-#     for samp in samples_of_species:
-#         sp = samp.split("_")[2]
-#         tiss = samp.split("_")[3]
-#         combo = sp + "_" + tiss
-#         row = samp + "\t" + otp_Dir + combo + "/" + samp + ".rds"
-       
-#         with open(flname, "a") as otp:
-#             otp.write(row + "\n")
-#     return
-
-# rule create_matrixInput:
-# 	output:
-# 		otp_fl = "chicago/input/{species}_toPeakMatrix.tab"
-# 	params:
-# 		sample_list = samplesheet.query("species == '{species}'")["sample"].tolist(),
-# 	run:
-#         make_table(sample_list = params.sample_list, otp_Dir = "chicago/design/", species = wildcards.species)
+def get_input_tissue(wildcards):
+    """"
+    Get the replicates for a given tissue / species.
+    """
+    samples = samplesheet.query("species == @wildcards.species & tissue == @wildcards.tissue")["sample"].tolist()
+    return samples
+    
+    
+rule run_chicago:
+    input:
+        f1="chicago/design/{species}/{species}.poe",
+        f2="chicago/design/{species}/{species}.npb",
+        f3="chicago/design/{species}/{species}.nbpb",
+        chicago_input=lambda w: expand("chicago/input/{species}/{sample}.chinput", species=w.species, sample=get_input_tissue(w)),
+        chicago_bedpe=lambda w: expand("chicago/input/{species}/{sample}_bait2bait.bedpe", species=w.species, sample=get_input_tissue(w))
+    output:
+        chicago_ibed="chicago/output/{species}/{tissue}_chicago.ibed",
+        chicago_seqmonk="chicago/output/{species}/{tissue}_chicago_seqmonk.txt",
+        chicago_washU="chicago/output/{species}/{tissue}_chicago_washU_text.txt",
+        chicago_rds="chicago/output/{species}/{tissue}_chicago.rds",
+        chicago_full_table="chicago/output/{species}/{tissue}_chicago_full_table.txt",
+    params:
+        inputfolder="chicago/input/{species}/",
+        designfolder="chicago/design/{species}/",
+        outfolder="chicago/output/{species}/",
+        samples=lambda w: get_input_tissue(w)
+    conda:
+        "envs/chicago.yaml",
+    message: "Running CHiCAGO for {wildcards.species} x {wildcards.tissue}."
+    shell:
+        """
+        {workflow.basedir}/rules/scripts/1.run_chicago.R \
+        --inputfolder {params.inputfolder} \
+        --designfolder {params.designfolder} \
+        --samples {params.samples} \
+        --species {wildcards.species} \
+        --tissue {wildcards.tissue} \
+        --out={params.outfolder}
+        """
