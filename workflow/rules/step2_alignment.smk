@@ -13,14 +13,12 @@ rule alignment_hicup:
         genome_digest="genomes/{species}/digest_HindIII.txt",
     output:
         out_dir=directory("alignment/{species}/{sample}/"),
-        trunc_r1="alignment/{species}/{sample}/{sample}_r_1.trunc.fastq.gz",
-        trunc_r2="alignment/{species}/{sample}/{sample}_r_2.trunc.fastq.gz",
         bam="alignment/{species}/{sample}/{sample}_r_1_2.hicup.bam",
     log:
         "logs/alignment/{species}_{sample}_alignment_hicup.log",
     threads: 12
     resources:
-        mem_mb=1024 * 25
+        mem_mb=1024 * 20
     conda:
         "envs/alignment.yaml"
     message: "Running HiCUP for {wildcards.sample}."
@@ -35,6 +33,7 @@ rule alignment_hicup:
         --index {input.genome_index}/{wildcards.species} \
         --longest 700 \
         --zip \
+        --keep \
         --outdir {output.out_dir} \
         --shortest 50 \
         --threads {threads} \
