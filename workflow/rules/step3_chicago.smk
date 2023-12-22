@@ -78,6 +78,9 @@ rule chicago_output:
         out_name="chicago/input/{species}/{sample}"
     conda:
         "envs/chicago.yaml",
+    threads: 5
+    resources:
+        mem_mb=1024 * 20,
     message: "Generating CHiCAGO input files for ({wildcards.species}): {wildcards.sample}."
     shell:
         """
@@ -123,14 +126,16 @@ rule run_chicago:
         samples=lambda w: get_input_tissue(w)
     conda:
         "envs/chicago.yaml",
+    threads: 10
+    resources:
+        mem_mb=1024 * 40,
     message: "Running CHiCAGO for {wildcards.species} x {wildcards.tissue}."
     shell:
         """
         {workflow.basedir}/rules/scripts/1.run_chicago.R \
         --inputfolder {params.inputfolder} \
         --designfolder {params.designfolder} \
-        --samples {params.samples} \
-        --species {wildcards.species} \
+        --samples \"{params.samples}\" \
         --tissue {wildcards.tissue} \
         --out={params.outfolder}
         """
