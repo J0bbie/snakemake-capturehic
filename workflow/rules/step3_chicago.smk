@@ -66,7 +66,7 @@ rule chicago_designfiles:
                     --designDir={params.designDir}
         """
 
-rule chicago_output:
+rule chicago_input:
     input:
         bam="alignment/{species}/{sample}/{sample}_r_1_2.hicup.bam",
         rmap="chicago/design/{species}/{species}.rmap",
@@ -80,7 +80,7 @@ rule chicago_output:
         "envs/chicago.yaml",
     threads: 5
     resources:
-        mem_mb=1024 * 20,
+        mem_mb=1024 * 75,
     message: "Generating CHiCAGO input files for ({wildcards.species}): {wildcards.sample}."
     shell:
         """
@@ -128,7 +128,7 @@ rule run_chicago:
         "envs/chicago.yaml",
     threads: 10
     resources:
-        mem_mb=1024 * 40,
+        mem_mb=1024 * 75,
     message: "Running CHiCAGO for {wildcards.species} x {wildcards.tissue}."
     shell:
         """
