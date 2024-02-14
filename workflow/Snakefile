@@ -31,7 +31,7 @@ wildcard_constraints:
 rule all:
     input:
         lambda w: [
-            "chicago/output/{species}/{tissue}_chicago.ibed".format(
+            "genomes/{species}/{species}_exons.bed".format(
                 sample=sample, species=species, tissue=tissue, replicate=replicate
             )
             for sample, species, tissue, replicate in zip(

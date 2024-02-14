@@ -11,3 +11,7 @@ See the [documentation](https://odomlab2.github.io/snakemake-capturehic/) for mo
 ## Quickstart
 
 `snakemake -p --profile lsf_dkfz --use-conda --rerun-incomplete --notemp -n`
+
+
+# ToDo
+Make combinedRegElements -> README -> HMODS BED Files in totransfer.gz
